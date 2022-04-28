@@ -3,8 +3,10 @@ package com.intellif.composefacedevice.camera
 
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import android.util.Size
 import android.view.Surface.ROTATION_0
+import android.view.Surface.ROTATION_90
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -31,13 +33,15 @@ class CameraXHelper(
         cameraProviderFuture.addListener({
             // 2.1. Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-
+            Log.i("tag", "可用摄像头个数: " + cameraProvider.availableCameraInfos.size)
+            cameraProvider.availableCameraInfos.forEach {
+                Log.i("tag", "可用摄像头: " + it)
+                it.cameraSelector
+            }
             // 2.2 设置预览相关参数
             val preview = Preview.Builder()
-                .setTargetRotation(ROTATION_0)
+                .setTargetRotation(ROTATION_90)
                 .setTargetResolution(Size(800, 1280))
-//                .setTargetRotation((context as Activity).getWindowManager().getDefaultDisplay().getRotation())
-//                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .build()
                 .also {
                     it.setSurfaceProvider(previewView.surfaceProvider)
@@ -46,7 +50,7 @@ class CameraXHelper(
             val imageAnalysis = ImageAnalysis.Builder()
                 .setOutputImageRotationEnabled(true)// 是否旋转分析器中得到的图片
                 .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)//只读取最新的图片
-                .setTargetRotation(ROTATION_0)
+                .setTargetRotation(ROTATION_90)
                 .setTargetResolution(Size(800, 1280))
                 .build().apply {
                     setAnalyzer(
@@ -59,14 +63,15 @@ class CameraXHelper(
 
 
             // 2.3 选中摄像头
-            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+            val cameraSelector = cameraProvider.availableCameraInfos[0].cameraSelector
             try {
                 // 2.4 Unbind use cases before rebinding
                 cameraProvider.unbindAll()
                 //2.5 Bind use cases to camera
-                cameraProvider.bindToLifecycle(
+                val camera = cameraProvider.bindToLifecycle(
                     lifecycleOwner, cameraSelector, preview, imageAnalysis//绑定多个case同时可以云岚和数据分析
                 )
+
             } catch (exc: Exception) {
                 exc.printStackTrace()
             }
