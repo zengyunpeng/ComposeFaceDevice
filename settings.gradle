@@ -18,3 +18,5 @@ rootProject.name = "ComposeFaceDevice"
 include ':app'
 include ':yuv'
 include ':utils'
+include ':dblib'
+include ':sik'

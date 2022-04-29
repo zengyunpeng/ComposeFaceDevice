@@ -2,15 +2,14 @@ package com.intellif.composefacedevice.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,24 +19,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.intellif.arctern.FaceUtils
-import com.intellif.arctern.base.*
 import com.intellif.composefacedevice.R
-import com.intellif.composefacedevice.camera.CameraXHelper
+import com.intellif.composefacedevice.ui.vm.MainVm
 import com.intellif.composefacedevice.view.FaceView
+import com.intellif.composefacedevice.view.LivingSurfaceView
+import com.intellif.composefacedevice.view.preview.LivingInterface1
 import com.theeasiestway.yuv.YuvUtils
-import kotlinx.coroutines.flow.MutableStateFlow
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MainActivity : ComponentActivity(), DetectCallBack, TrackCallBack, SearchCallBack,
-    AttributeCallBack {
-    private val yuvUtils = YuvUtils()
-    var faceRec = MutableStateFlow<Array<FaceView.DrawRect>?>(null)
-
+class MainActivity : ComponentActivity() {
+    val mainVm by viewModel<MainVm>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             Content()
         }
+//        mainVm.faceRecs.observeAsState()
+        startSDKDetectServer()
+        initState()
     }
+
+    private fun initState() {
+
+    }
+
+    private fun startSDKDetectServer() {
+        FaceUtils.getInstance().arcternsdk_access_set_detect_cbf(mainVm) //检测 这个回调暂时空实现
+        FaceUtils.getInstance().arcternsdk_access_set_track_cbf(mainVm) //追踪
+        FaceUtils.getInstance().arcternsdk_access_set_search_cbf(mainVm) //搜索
+        FaceUtils.getInstance().arcternsdk_access_set_filt_cbf(mainVm) //筛选
+        LivingInterface1.getInstance().setLivingCallBack(mainVm)
+    }
+
 
     var frameTime = 0L
 
@@ -48,43 +61,30 @@ class MainActivity : ComponentActivity(), DetectCallBack, TrackCallBack, SearchC
         Box {
             AndroidView(
                 { context ->
-                    PreviewView(context)
-                        .apply {
-                            CameraXHelper(
-                                getContext(),
-                                getContext() as MainActivity,
-                                this,
-                            ) {
-                                if (System.currentTimeMillis() - frameTime > 66.6) {
-                                    frameTime = System.currentTimeMillis()
-                                    var yuvFrame = yuvUtils.convertToI420(it.image!!)
-                                    //对图像进行旋转
-                                    yuvFrame = yuvUtils.rotate(yuvFrame, 90)
-                                    val arcternImage = ArcternImage()
-                                    arcternImage.image_format =
-                                        ArcternImage.ARCTERN_IMAGE_FORMAT_YUV420
-                                    arcternImage.frame_id = it.imageInfo.timestamp
-                                    arcternImage.gdata = yuvFrame.asArray()
-                                    arcternImage.width = 480
-                                    arcternImage.height = 640
-                                    Log.i("tag", "向arcternSDK传递数据...")
-                                    FaceUtils.getInstance()
-                                        .arcternsdk_access_delivery_trackonly(arcternImage)
-                                }
-                            }
-                        }
+                    LivingSurfaceView(context, null)
                 },
+
                 modifier = Modifier
-//                .width(640.dp)
-//                .height(480.dp)
                     .fillMaxHeight()
                     .fillMaxWidth()
             )
-            AndroidView({ context ->
-                FaceView(context, null).apply {
-                    setFaces(faceRec.value, 800, 1280, 800, 1280, setRecongize)
+            val faceRecs = mainVm.faceRecs.observeAsState()
+            AndroidView(
+                factory = { context ->
+                    FaceView(context, null)
+                },
+                modifier = Modifier.fillMaxHeight().fillMaxWidth(),
+                update = {
+                    it.setFaces(
+                        faceRecs.value,
+                        480,
+                        640,
+                        800,
+                        1280,
+                        setRecongize
+                    )
                 }
-            }, modifier = Modifier.fillMaxHeight().fillMaxWidth())
+            )
 
 
             Row(
@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity(), DetectCallBack, TrackCallBack, SearchC
                         )
                         Text(
 
-                            "10人",
+                            "0",
                             color = Color.White,
                             modifier = Modifier.padding(start = 5.dp),
                             fontSize = 12.sp
@@ -162,62 +162,10 @@ class MainActivity : ComponentActivity(), DetectCallBack, TrackCallBack, SearchC
 
 
         }
-        startArcternSdk()
-
     }
 
-    private fun startArcternSdk() {
-        FaceUtils.getInstance().arcternsdk_access_set_detect_cbf(this)
-        FaceUtils.getInstance().arcternsdk_access_set_track_cbf(this)
-        FaceUtils.getInstance().arcternsdk_access_set_search_cbf(this)
-        FaceUtils.getInstance().arcternsdk_access_set_filt_cbf(this)
-
-    }
 
     var setRecongize = HashSet<Long>()
-    override fun onDetectListener(p0: ArcternImage?, p1: Array<out ArcternRect>?, p2: FloatArray?) {
-        TODO("Not yet implemented")
-    }
 
-    override fun onLivingDetectListener(
-        p0: ArcternImage?,
-        p1: Array<out ArcternRect>?,
-        p2: FloatArray?
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onTrackListener(
-        arcternImage: ArcternImage?,
-        trackIds: LongArray?,
-        arcternRects: Array<out ArcternRect>?
-    ) {
-        val drawrects: Array<FaceView.DrawRect> =
-            FaceView.ArcternRectToDrawRect(arcternRects, trackIds)
-        runOnUiThread {
-
-        }
-    }
-
-    override fun onSearchListener(
-        p0: ArcternImage?,
-        p1: LongArray?,
-        p2: Array<out ArcternRect>?,
-        p3: LongArray?,
-        p4: IntArray?,
-        p5: FloatArray?
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onAttributeListener(
-        p0: ArcternImage?,
-        p1: LongArray?,
-        p2: Array<out ArcternRect>?,
-        p3: Array<out Array<ArcternAttribute>>?,
-        p4: IntArray?
-    ) {
-        TODO("Not yet implemented")
-    }
 
 }

@@ -15,8 +15,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
-import android.widget.RelativeLayout;
-
 
 import com.intellif.arctern.base.ArcternRect;
 import com.intellif.composefacedevice.R;
@@ -109,26 +107,8 @@ public class FaceView extends View {
         canvas.save();
         canvas.rotate(-0);   //Canvas.rotate()默认是逆时针
         for (int i = 0; i < mFaces.length; i++) {
-//            if (MainDevice.DeviceType == MainDevice.DEVICE_TB) {
-//                rectF_left = width - mFaces[i].getRectRight();
-//                rectF_right = width - mFaces[i].getRectLeft();
-//            } else {
-
-            if (true) {
-                rectF_left = mFaces[i].getRectLeft();
-                rectF_right = mFaces[i].getRectRight();
-            } else {
-                rectF_left = width - mFaces[i].getRectRight();
-                rectF_right = width - mFaces[i].getRectLeft();
-            }
-//            }
-
-            if (false) {
-                rectF_buffer = rectF_left;
-                rectF_left = rectF_right;
-                rectF_right = rectF_buffer;
-            }
-
+            rectF_left = mFaces[i].getRectLeft();
+            rectF_right = mFaces[i].getRectRight();
             rectF_top = mFaces[i].getRectTop();
             rectF_bottom = mFaces[i].getRectBottom();
             mRect.set((rectF_left) * view_width / (float) width,
