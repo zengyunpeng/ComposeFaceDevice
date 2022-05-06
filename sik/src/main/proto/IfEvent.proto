@@ -1,0 +1,301 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.event";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+import "IfCommonType.proto";
+import "IfCanteen.proto";
+
+///////////////////////////////////////
+//人脸检测结果过滤
+message FaceCaptureFilter{
+    bool background_image=1;                // 是否上传背景图
+    bool face_image=2;                      // 是否上传人脸图
+    bool face_register=3;                   // 是否上传注册人脸
+    bool body_image = 4;                    // 是否上传人体图
+}
+
+// 上传配置
+message ReportFilter{
+    bool report_recognized_person=1;        // 是否上传已识别人员
+    bool report_stranger=2;                 // 是否上传陌生人
+    bool report_identity_info=3;            // 是否上传身份证识别信息
+}
+
+message SubscribeRequest{
+    string receive_address=1;               // 事件通知地址和端口,如果提供，则通知将发往指定的地址，否则就沿着已经建立的连接发送出去
+    int32 receive_port=2;                   // 端口
+    FaceCaptureFilter face_capture_filter=3;// 如果不提供，则背景图和人脸图都不会上传
+    ReportFilter report_filter=4;           // 识别上报配置，如果不提供则不会上传相关记录
+    PassengerFlowFilter passenger_flow_filter=5;
+    CommonStatus no_face_check = 6;//默认无人脸检测 false-无人脸/true-有人脸
+    CommonStatus change_face_check  = 7;//默认人脸改变检测 false-人脸未改变/true-人脸改变
+}
+
+message PassengerFlowFilter{
+    bool passenger_flow=1;                  //是否启用数人头功能
+}
+
+// 数人头参数设置
+message SetPassengerFlowConfigurationRequest {
+    repeated LineConfiguration line_configuration=1;//划线参数
+    int32 interval=2;                       //上报人数的时间间隔，单位为秒
+}
+message SetPassengerFlowConfigurationResponse {
+}
+
+message GetPassengerFlowConfigurationRequest{
+}
+
+message GetPassengerFlowConfigurationResponse{
+    repeated LineConfiguration line_configuration=1;
+    int32 interval=2;
+}
+
+// 划线参数
+message LineConfiguration {
+    int32 x_l=1;	            //起点x坐标
+    int32 y_l=2;	            //起点y坐标
+    int32 x_r=3;	            //终点x坐标
+    int32 y_r=4;	            //终点y坐标
+    int32 id=5;	                //唯一Id
+    bool forward_direction=6;   //正向是否计数，默认不计数，
+    bool reverse_direction=7;   //反向是否计数，默认不计数
+}
+
+message SubscribeResponse{
+    int32 subscription_id=1;                // 订阅标识
+}
+///////////////////////////////////////
+
+message UnsubscribeRequest{
+    int32 subscription_id=1;                // 订阅标识
+}
+
+message UnsubscribeResponse{
+}
+///////////////////////////////////////
+
+//人脸检测结果
+message FaceCaptureResult {
+    message Result{
+        FaceInformation face=1;
+        bool recognized=2;              // 是否已经识别
+        string person_id=3;
+        string name=4;
+        string customer_id=5;
+        float score=6;                  // 识别结果得分
+        int32 time= 7;                  // 识别用时(毫秒)
+        float temperature = 8;          // 温度
+        int32 state = 9;                // 0 表示未开启温度模块 1 为正常温度 2 为异常温度
+        int32 type = 10;                // 检测返回结果类型 0 表示人脸 1 表示IC卡 2表示人脸+IC卡 3表示二维码
+        int32 respirator = 11;          // 0 表示未开启口罩识别 1 表示无口罩 2 表示有口罩
+        PersonType person_type =12;     // 人员类型
+    }
+    repeated Result results=1;
+}
+
+//修改分析抓拍
+message AnalyticsResult{
+    int64 timestamp=1;
+    Image background_image=2;           // 背景图
+    FaceCaptureResult face_capture=3;   // 人脸检测结果
+    Image infrared_image=4;             // 红外图
+    Image three_dimensional_image=5;    // 3D图片
+    Image depth_maps_image=6;           // 深度图
+    BodyCaptureResult body_result = 7;  // 人体图片
+}
+
+
+message IdentityResult{
+    string name=1;              // 姓名
+    Gender gender=2;            // 性别
+    string nation=3;            // 民族
+    string id_number=4;         // 身份证号码
+    Image id_card_photo=5;      // 身份证头像
+    string address=8;           // 地址信息
+    float temperature = 9;      // 温度
+    int32 state = 10;           // 0 表示未开启温度模块 1 为正常温度 2 为异常温度
+    int32 type = 11;            // 0 表示人证身份证 1表示人证预约
+    string task_id = 12;        // 对应的任务id
+    repeated int32 area_id = 13;         //区域id
+}
+
+//修改通知
+message NotificationRequest {
+    int32 subscription_id=1;                                // 订阅标识
+    AnalyticsResult result=2;                               // 人脸识别信息
+    IdentityResult identity_result=3;                       // 身份识别信息
+    repeated PassengerFlowResult passenger_flow_result=4;   // 客流统计结果
+    int32 notification_id = 5;                              // 识别标识
+    repeated DirectEvents direct_events = 6;              // 方向事件
+    CommonStatus no_face_status = 7;                        //无人脸检测状态通知 false-无人脸/true-有人脸
+    CommonStatus change_face_status  = 8;                   //人脸改变检测状态通知 false-人脸改变/true-人脸未改变
+    CommonString extra_message = 9;                         //额外字段:加密密文
+    int32 event_type = 10;			    //事件类型
+    CanteenEvent canteenEvent = 11;     //食堂信息
+    CommonBool  password_open_door = 12;  //密码开门
+}
+
+
+message PassengerFlowResult{
+    int32 line_id=1;		        //跨过得线的Id
+    int32 arrival_x=2;		        //跨线位置横坐标
+    int32 arrival_y=3;		        //跨线位置纵坐标
+    int32 report_time=4;            //跨线时间
+    int32 object_id=5;              //被识别物体Id
+    int32 direction=6;              //跨线方向，0为正向，1为反向
+}
+
+message GetCurrentBackgroundRequest{
+}
+
+message GetCurrentBackgroundResponse{
+    Image image=1;          //背景大图
+    int64 timestamp = 2;    //抓拍时间
+}
+
+message NotificationResponse{
+}
+
+// Notification Confirm
+message NotificationConfirmRequest{
+    int32 notification_id = 1;          // 识别标识
+    string confirm = 2;                // confirm
+}
+
+message NotificationConfirmResponse{
+
+}
+
+message FaceMonitorRequest{
+  bool status = 1;          // 开启动作 false-关闭/true-开启
+}
+
+message FaceMonitorResponse{
+}
+
+message GetCurrentFaceRequest{
+	int32 num = 1;          //抓拍数量
+}
+
+message GetCurrentFaceResponse{
+}
+
+//新增人体图片
+message BodyCaptureResult {
+    message Result{
+        Image image=1;
+        int32 track_id = 2; // 跟踪Id
+        Rectangle rectangle = 3; //人体框
+        float quality = 4; //人脸质量
+        int32 pre_track_id = 5;     //旧trackid
+        int32 direct = 6;           // 方向
+        CommonStatus body_disappear_check = 7;// 人脸消失上报false-未消失/true-消失
+    }
+    repeated Result results=1;
+}
+
+enum DirectEnum{
+    DIRECT_IN = 0;
+    DIRECT_OUT = 1;
+    DIRECT_PASS = 2;
+}
+
+message DirectEvents{
+    int32 pre_track_id = 1;   //旧trackid
+    int32 rule_id = 2;          //规则id
+    DirectEnum direct = 3;           // 方向
+    int32 track_id = 4;        //
+    int64 timestamp= 5;         // 抓拍时间
+}
+
+//新增校验通知
+message NotifyCheckRequest{
+}
+
+message NotifyCheckResponse{
+}
+
+
+//新增设备上报现有数据指令
+message ReportCommandRequest{
+    message CommandDescribe{
+        int64 command_id = 1;
+        string customer_id = 2;
+    }
+    repeated CommandDescribe commands = 1;
+    int64 last_command_id = 2;
+}
+
+
+message ReportCommandResponse{
+}
+
+//新增校验完成通知
+message NotifyCheckEndRequest{
+}
+
+message NotifyCheckEndResponse{
+}
+
+//新增人体图片
+message FlowFaceCaptureResult {
+    message Result{
+        Image image=1;
+        Rectangle rectangle = 2; //人体框
+        float quality = 3; //人脸质量
+        int64 timestamp= 4;   // 抓拍时间
+    }
+    repeated Result results=1;
+}
+
+message FlowBodyCaptureResult {
+    message Result{
+        Image image=1;
+        Rectangle rectangle = 2; //人体框
+        float quality = 3; //人脸质量
+        int64 timestamp= 4;   // 抓拍时间
+    }
+    repeated Result results=1;
+}
+
+message FlowDirectEvents{
+    message Result{
+        int32 rule_id = 1;          //规则id
+        DirectEnum direct = 2;           // 方向
+        int64 timestamp= 3;         // 抓拍时间
+    }
+    repeated Result results=1;
+}
+
+//自研设备客流数据
+message NotifyPassengerFlowRequest{
+    int32 pre_track_id = 1;   //旧trackid
+    int32 track_id = 2;        //trackid
+    FlowFaceCaptureResult face_image = 3; //人脸图
+    FlowBodyCaptureResult body_image = 4; //人体图
+    FlowDirectEvents direct = 5;  //事件方向
+    int64 timestamp= 6;         // 结束抓拍时间
+    int32 root_track_id = 7;
+    int64 start_time= 8;         // 轨迹开始时间
+    bool offline = 9;     //true:离线  false:非离线
+}
+
+message NotifyPassengerFlowResponse{
+
+}
+///////////////////////////////////////
+
+//grpc服务接口
+///////////////////////////////////////
+service EventService{
+    rpc Subscribe(SubscribeRequest)returns(SubscribeResponse);
+    rpc Unsubscribe(UnsubscribeRequest)returns(UnsubscribeResponse);
+    rpc Notify(NotificationRequest)returns(NotificationResponse);
+    rpc GetCurrentBackground(GetCurrentBackgroundRequest)returns(GetCurrentBackgroundResponse);
+    rpc NotificationConfirm(NotificationConfirmRequest)returns(NotificationConfirmResponse);
+}

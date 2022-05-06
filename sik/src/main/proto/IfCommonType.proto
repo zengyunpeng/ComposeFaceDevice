@@ -1,0 +1,251 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.common";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+
+///////////////////////////////////////
+//公共数据类型定义
+///////////////////////////////////////
+enum ErrorCode {
+    ErrorCode_OK = 0; //OK
+    ErrorCode_InnerError = -1; //内部处理错误
+    ErrorCode_InvalidParameter = -2; //无效的参数
+    ErrorCode_SystemBusy = -3; //系统忙
+    ErrorCode_InvalidMessage = -4; //无效的消息
+    ErrorCode_InvalidUsernameOrPassword = -5; //无效的用户名或密码
+    ErrorCode_PermissionDenied = -6; //没有权限
+    ErrorCode_NotImplemented = -7; //没有实现
+}
+
+message Date {
+    int32 year = 1;
+    int32 month = 2;
+    int32 day = 3;
+}
+
+message Time {
+    int32 hour = 1;
+    int32 minute = 2;
+    int32 second = 3;
+}
+
+message DateTime {
+    Date date = 1;
+    Time time = 2;
+}
+
+enum Weekday {
+    Weekday_Sunday = 0;
+    Weekday_Monday = 1;
+    Weekday_Tuesday = 2;
+    Weekday_Wendsday = 3;
+    Weekday_Thursday = 4;
+    Weekday_Friday = 5;
+    Weekday_Saturday = 6;
+}
+
+message Rectangle {
+    int32 left = 1;
+    int32 top = 2;
+    int32 right = 3;
+    int32 bottom = 4;
+}
+
+enum ImageFormat {
+    ImageFormat_JPG = 0;
+    ImageFormat_PNG = 1;
+    ImageFormat_OTHER = 2;
+}
+
+message Image {
+    ImageFormat format = 1;
+    bytes data = 2;
+}
+
+message Resolution {
+    int32 width = 1;
+    int32 height = 2;
+}
+
+message ErrorInformation {
+    sint32 code = 1; //错误码
+    string information = 2; //错误信息
+}
+
+enum Gender {
+    Male = 0; //男性
+    Female = 1; //女性
+    UnknownGender = 2; //未指定性别或者未知性别
+}
+
+message TimePeriod {
+    Time begin = 1;
+    Time end = 2;
+}
+
+message WeekdayTimePeriod {
+    Weekday day = 1;
+    repeated TimePeriod period = 2;
+}
+
+message AccessRule {
+    repeated WeekdayTimePeriod weekday_time_period = 1; //按照星期定义规则
+    DateTime start = 2; //规则生效起始时间，如没有，则立即生效
+    DateTime stop = 3; //规则失效起始时间，如没有，则永久有效
+    int32 rule_id = 4; //规则id
+    string md5 = 5;//md5加密校验
+}
+
+enum PersonType {
+    PersonType_Visitor = 0;     // 访客
+    PersonType_Permanent = 1;   // 常住人员
+    PersonType_BlackList = 2;   // 黑名单
+    PersonType_VIP = 3;         // vip
+    PersonType_Teacher = 4 ;    // 老师
+    PersonType_Student = 5 ;    //学生
+}
+
+enum MessagePushType {
+    MessagePushType_Normal = 0; //常规消息推送,需要提供起始时间和结束时间来显示
+    MessagePushType_Anniversary = 1; //纪念日消息推送，如生日、周年庆等，可循环显示
+}
+
+message MessagePush {
+    MessagePushType type = 1; //推送消息类型
+    DateTime start = 2; //推送生效起始时间，如没有，则立即生效
+    DateTime stop = 3; //推送失效时间，如没有，则永久有效
+    string message_content = 4; //推送显示的文字内容
+}
+
+//人员信息
+message PersonInformation {
+    string person_id = 1; //人员ID，如身份证号码
+    string born_date = 2; //出生日期，格式：YYYYMMDD
+    Gender gender = 3; //性别
+    int32 age = 4; //年龄
+    string name = 5; //姓名
+    string nation = 6; //名族
+    string phone_num = 7; //电话号码
+    string address = 8; //住址
+    string customer_id = 9; //用户自定义Id，设备只是做保存
+    AccessRule rule = 10; //进入规则，门禁产品使用
+    PersonType type = 11; //人员类型，如果是访客，则过了有效期之后，会被自动清除
+    repeated MessagePush push = 12; //精准推送，包含事件推送(最多3条)和固定推送(最多4条)
+    string work_number = 13;// 工牌号码
+    string department = 14;// 所属部门
+    string ic_card = 15; // ic 卡号
+    string qr_code = 16; // 二维码信息
+    string office_date = 17;//入职日期
+    repeated int32 rule_ids = 18;//多个通行规则ID
+    string id_number = 19;//身份证号码
+    Image background = 20; //封面图
+    string background_url = 21; //封面图url
+}
+
+//人员
+message Person {
+    int32 face_id = 1; //人脸ID
+    PersonInformation information = 2;
+    Image image = 3; //人脸照片
+}
+
+//人脸信息
+message FaceInformation {
+    int32 id = 1; //人脸Id
+    Rectangle rectangle = 2; //人脸框
+    float quality = 3; //人脸质量
+    Gender gender = 4; //性别
+    int32 age = 5; //年龄
+    bytes feature = 6; //特征值
+    Image image = 7; //人脸图
+    int32 track_id = 8; // 跟踪Id
+    Image register_image = 9;//注册人脸图
+    Rectangle small_face_rectangle = 10; //人脸小图人脸框
+    int32 pre_track_id = 11;   //旧trackid
+    int32 direct = 12;           // 方向
+    CommonStatus face_disappear_check = 13;// 人脸消失上报false-未消失/true-消失
+}
+
+message IntRange {
+    int32 minimum = 1;
+    int32 maximum = 2;
+}
+
+// 检查模式
+message PassThroughModel {
+    bool person_face = 1;               // 人脸
+    bool ic_card = 2;                   // IC卡
+    bool identity_card = 3;             // 身份证和人脸 1:1
+    bool identity_card_immediately = 4; // 只刷身份证
+    bool qr_code = 5;                   // 二维码开门
+    bool person_face_and_id_card = 6;   // 人脸+IC卡
+    bool appointment = 7;               // 人证预约模式
+    bool identity_same_cp = 8;    //身份证号码相互比对
+}
+
+// 特定检查模式
+message PassThroughFeatureModel {
+    CommonBool person_face = 1;               // 人脸
+    CommonBool ic_card = 2;                   // IC卡
+    CommonBool identity_card = 3;             // 身份证和人脸 1:1
+    CommonBool identity_card_immediately = 4; // 只刷身份证
+    CommonBool qr_code = 5;                   // 二维码开门
+    CommonBool person_face_and_id_card = 6;   // 人脸+IC卡
+    CommonBool appointment = 7;               // 人证预约模式
+    CommonBool identity_same_cp = 8;    //身份证号码相互比对
+}
+
+// 开门方式
+enum DoorControlModel {
+    ELECTRIC_RELAY = 0; // 继电器
+    WIEGAND_PROTOCOL_26 = 1; // 韦根26协议
+    WIEGAND_PROTOCOL_34 = 2; // 韦根34协议
+    RS485_PROTOCOL=3;//485协议发送开门信号
+    NET_RELAY = 4;//网络继电器
+}
+
+message StringIds{
+    repeated string ids = 1;
+}
+
+message Int32Ids{
+    repeated int32 ids = 1;
+}
+
+message CommonStatus{
+   bool status = 1;//false-不开启/true-开启
+}
+
+message CommonString{
+   string message = 1;//字符串
+}
+
+message Point{
+    int32 x = 1;
+    int32 y = 2;
+}
+
+message ResourceInfo{
+    int32 resource_id = 1;//资源id
+    string resource_content = 2;//资源内容
+}
+
+message CommonInt{
+    int32 message = 1;
+}
+
+message CommonBytes{
+    bytes message = 1;
+}
+
+message CommonFloat{
+    float message = 1;
+}
+
+message CommonBool{
+    bool message = 1;
+}

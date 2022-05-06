@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.witness";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+import "IfCommonType.proto";
+
+
+message AppointmentPersonInfo {
+    string person_name = 1;                        // 人员名称
+    string id_number = 2;                          // 身份证号
+}
+
+message AppointmentRequest {
+    string id = 1;                                  // 任务id
+    repeated AppointmentPersonInfo persons = 2;     // 预约人员信息
+    DateTime start = 3;                             //预约生效起始时间
+    DateTime stop = 4;                              //预约失效起始时间
+}
+
+message AppointmentResponse{
+}
+
+
+message DeleteAppointmentRequest{
+    string id = 1;
+}
+
+message DeleteAppointmentResponse{
+}
+
+
+message Area{
+    string name = 1;
+    int32 id = 2;
+}
+
+//获取区域列表
+message GetAreaListRequest{
+
+}
+
+message GetAreaListResponse{
+    repeated Area areas = 1;
+}
+
+//grpc服务接口
+///////////////////////////////////////
+service WitnessService{
+    rpc Appointment(AppointmentRequest)returns(AppointmentResponse);
+}

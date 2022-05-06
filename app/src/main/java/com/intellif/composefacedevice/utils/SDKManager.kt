@@ -15,7 +15,7 @@ import java.io.File
  */
 object SDKManager {
 
-    fun initSDK() {
+    fun cpSDK() {
         File(Constants.SDK_PATH).apply {
             if (exists()) {
                 //版本升级时候更新model文件夹,更新检测模型

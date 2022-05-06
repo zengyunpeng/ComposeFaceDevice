@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.videoIntercom";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+import "IfCommonType.proto";
+
+
+enum CallCode {
+    Success = 0;     //接通
+    Refuse = 1;      //拒绝
+    CallServiceError = 2; //通信服务异常
+    PlatformServiceError = 3; //平台服务异常
+    NotFindRoom = 4;    //房间号不存在
+}
+
+//呼叫
+message CallRequest{
+    string room_id = 1;  //呼叫房号id
+    Image image=2;     //抓拍图片
+}
+
+message CallResponse{
+    CommonInt record_id = 1; //记录id
+    CallCode call_code = 2; //错误码
+}
+
+//取消呼叫
+message CallCancelRequest{
+    string room_id = 1;  //呼叫房号id
+    Image image=2;     //抓拍图片
+    CommonInt record_id = 3; //记录id
+
+}
+
+message CallCancelResponse{
+    CallCode call_code = 1; //错误码
+}
+
+//呼叫超时上报
+message CallTimeOutRequest{
+    string room_id = 1;  //呼叫房号id
+    Image image=2;     //抓拍图片
+    CommonInt record_id = 3; //记录id
+}
+
+message CallTimeOutResponse{
+    CallCode call_code = 1; //错误码
+}
+
+//挂断 支持设备,平台双向
+message HangUpRequest{
+    string room_id = 1;  //呼叫房号id
+    Image image=2;     //抓拍图片
+    CommonInt record_id = 3; //记录id
+}
+
+message HangUpResponse{
+    CallCode call_code = 1; //错误码
+}

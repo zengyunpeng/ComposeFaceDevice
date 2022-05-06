@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.safety";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+
+// 设备端请求license
+message GetLicenseRequest{
+    string signature = 1;  // signature
+}
+
+message GetLicenseResponse{
+    bytes license = 1;
+}
+
+//grpc服务接口
+///////////////////////////////////////
+service SafetyService{
+    rpc GetLicense(GetLicenseRequest)returns(GetLicenseResponse);
+}

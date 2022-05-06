@@ -1,0 +1,387 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.facedb";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+import "IfCommonType.proto";
+
+///////////////////////////////////////
+//人脸库数据类型定义
+///////////////////////////////////////
+message GetFaceDatabaseInformationRequest{
+}
+
+message GetFaceDatabaseInformationResponse{
+    int32 total_face_count=1;//人脸库中的人脸总数
+}
+
+///////////////////////////////////////
+message GetPersonRequest {
+    //既可以通过face_id来获取人员信息，也可以通过person_id来获取人员信息，还可以通过customer_ids来获取人员信息，三者者选其一
+    repeated int32 face_ids=1;//人脸ID
+    repeated string person_ids=2;//人员ID，如身份证号码
+    repeated string customer_ids=3;//用户自定义Id
+}
+
+message GetPersonResponse {
+    repeated Person persons=1;
+}
+///////////////////////////////////////
+
+//获取多个人员信息，由于人员可能很多，所以需要分批获取
+message GetPersonsRequest {
+    int32 start=2;//起始索引
+    int32 end=3;//结束索引，每次最多可以获取100张人脸信息
+}
+
+message GetPersonsResponse {
+    repeated Person persons=1;
+}
+///////////////////////////////////////
+//通过人脸照片入库
+enum AddPersonState{
+    AddPersonState_OK=0;                        //OK
+    AddPersonState_NonsupportImageFormat=1;     //不支持的图片格式
+    AddPersonState_LowQualityFace=2;            //人脸质量太差，例如不清晰、人脸面积小
+    AddPersonState_InvalidFeature=3;            //无效的特征值
+    AddPersonState_NoFace=4;                    //未检出人脸
+    AddPersonState_PicSizeLow=5;                // 图片分辨率过低
+    AddPersonState_IllegalFacePosition=6;       //人脸位置不合法（人脸在图片边缘）
+    AddPersonState_PullFailed=7;                //拉取失败
+    AddPersonState_OtherError=128;              //其他错误
+}
+
+message AddPersonRequest {
+    PersonInformation information=1;
+    Image image = 2;        //人脸照片（当人脸照片与地址同时提供时，会使用人脸照片，忽略人脸照片地址）
+    string image_url = 3;  //人脸照片地址
+    Rectangle face_rectangle = 4;//人脸在照片中的位置
+    string alg_version = 5;//算法版本
+    bool confidence = 6; //信任标记
+}
+
+message AddPersonResponse {
+    string person_id=1;//人员ID，如身份证号码
+    int32 face_id=2;//人脸ID
+    Rectangle face_rectangle=3;//人脸在照片中的位置
+    string name=4;//姓名
+    string customer_id=5;//用户自定义Id
+    AddPersonState state=6;//添加状态，只有当state=AddPersonState_OK时，上述参数有效
+}
+
+///////////////////////////////////////
+//通过特征值入库
+message AddPersonByFeatureRequest
+{
+    message AddPersonByFeature{
+        PersonInformation information=1;
+        bytes feature=2;//特征值
+    }
+    repeated AddPersonByFeature persons=1;
+}
+
+message AddPersonByFeatureResponse{
+    message AddPersonByFeatureResult{
+        AddPersonState state=1;//添加状态
+        string person_id=2;//人员ID，如身份证号码 
+        string name=3;//姓名
+        string customer_id=4;//用户自定义Id
+    }
+
+
+    repeated AddPersonByFeatureResult failure_result=1;
+    repeated AddPersonByFeatureResult success_result=2;
+}
+///////////////////////////////////////
+
+message DeletePersonRequest {
+    //既可以通过face_id来删除人员信息，也可以通过person_id来删除人员信息，还可以通过customer_ids来删除人员信息，三者者选其一
+    repeated int32 face_id=1;//人脸ID
+    repeated string person_id=2;//人员ID，如身份证号码
+    repeated string customer_ids=3;//用户自定义Id
+}
+
+enum DeletePersonState{
+    DeletePersonState_OK=0;                  //OK
+    DeletePersonState_Error=128;              //其他错误
+}
+
+message DeletePersonResponse {
+    message DeletePersonResult{
+        int32 face_id=1;//人脸ID
+        string person_id=2;//人员ID，如身份证号码
+        string customer_id=3;
+        DeletePersonState state=4;//删除状态
+    }
+    repeated DeletePersonResult results=1;
+}
+///////////////////////////////////////
+
+message ClearFaceDatabaseRequest{
+}
+
+message ClearFaceDatabaseResponse{
+}
+///////////////////////////////////////
+
+message SetPersonRequest {
+    //既可以通过face_id来修改人员信息，也可以通过person_id来修改人员信息，还可以通过customer_ids来修改人员信息，三者者选其一
+    int32 face_id=1;//人脸ID
+    string person_id=2;//人员ID，如身份证号码
+    string customer_id=3;//用户自定义Id
+    PersonInformation information=4;
+}
+
+enum SetPersonState{
+    SetPersonState_OK=0;                        //OK                /
+    SetPersonState_Error=128;              //其他错误
+}
+
+message SetPersonResponse {
+    message SetPersonResult{
+        int32 face_id=1;//人脸ID
+        string person_id=2;//人员ID，如身份证号码
+        string customer_id=3;
+        SetPersonState state=4;//删除状态
+    }
+    SetPersonResult result=1;
+}
+
+//人脸库导入
+///////////////////////////////////////
+//由于文件可能比较大，所以采用分段传输的方式，一个文件
+//被分成很多段进行传输
+message StartFaceDatabaseImportRequest{
+    int32 total_size=1;         //文件总大小
+    int32 total_packet_count=2; //分包个数
+    int32 per_packet_size=3;    //分包大小
+    string password=4;//人脸库解密密码，如果不提供，则表示人脸库没有加密
+}
+
+message StartFaceDatabaseImportResponse{
+}
+
+message FaceDatabaseImportRequest{
+    int32 current_packet_index=1;//当前分包序号，从0开始
+    bool end_packet=2;           //是否是最后一个包
+    bytes packet_data=3;         //分包数据
+}
+
+message FaceDatabaseImportResponse{
+}
+
+message CancelFaceDatabaseImportRequest{
+}
+
+message CancelFaceDatabaseImportResponse{
+}
+
+//人脸库导出
+///////////////////////////////////////
+//由于文件可能比较大，所以采用分段传输的方式，一个文件
+//被分成很多段进行传输
+message StartFaceDatabaseExportRequest{
+    string password=1;//加密人脸库密码，如果不提供，则不加密
+}
+
+message StartFaceDatabaseExportResponse{
+}
+///////////////////////////////////////
+
+message QueryFaceDatabaseEncryptProgressRequest{
+}
+
+message QueryFaceDatabaseEncryptProgressResponse{
+    int32 progress=1;           //加密进度，如果加密未完成，则total_size无效
+    int32 total_size=2;         //人脸库文件总大小
+}
+///////////////////////////////////////
+
+message FaceDatabaseExportRequest{
+}
+
+message FaceDatabaseExportResponse{
+    bool end_packet=1;           //是否是最后一个包
+    bytes packet_data=2;         //人脸库分包数据
+}
+///////////////////////////////////////
+
+message CancelFaceDatabaseExportRequest{
+}
+
+message CancelFaceDatabaseExportResponse{
+}
+///////////////////////////////////////
+
+// 提取特征值请求
+message ExtractFeatureRequest{
+    Image face_image=1;         // 人脸图片
+}
+
+message ExtractFeatureResponse{
+    bytes feature=1;             // 特征值
+    string version=2;            // 特征提取算法版本
+    AddPersonState state = 3;    // 状态
+}
+
+message FaceDetectionRequest{
+    Image face_image=1;         // 人脸图片
+}
+
+message FaceDetectionResponse{
+    Rectangle rectangle=1;      // 人脸坐标
+    string version=2;           // 检测算法版本
+    AddPersonState state = 3;   // 状态
+}
+
+// 服务端主动通知可以开始拉取
+message PullFaceStartRequest{
+}
+
+// 设备端响应
+message PullFaceStartResponse{
+
+}
+
+// 服务端主动通知可以停止拉取
+message PullFaceStopRequest{
+}
+
+// 设备端响应
+message PullFaceStopResponse{
+}
+
+// 设备端主动拉取
+message PullFaceRequest{
+    int32 pull_id = 1;           // 拉取id
+    int32 pull_begin = 2;        // 拉取开始位置
+    int32 pull_size = 3;         // 拉取数量
+}
+
+// 服务端响应
+message PullFaceResponse{
+    int32 pull_id = 1;                                  // 拉取id
+    bool  pull_finished = 2;                            // 本次拉取是否结束
+    int32 pull_next_begin = 3;                          // 下一次拉取开始位置
+    repeated FaceCommand commands = 4;                  // 拉取命令
+}
+
+message FaceCommand{
+    int32 id = 1;                                               // id
+    oneof type{
+        AddPersonByFeatureRequest feature_request = 2;    			// 特征值授权
+        DeletePersonRequest deletion_request = 3;                   // 删除授权
+        SetPersonRequest modification_request = 4;                  // 修改人员信息
+        AddPersonRequest image_request = 5;                         // 人脸照片授权
+    }
+}
+
+// 处理结果
+message FaceCommandResponse{
+    int32 id = 1;                   // 目标ID
+    oneof response{
+        AddPersonByFeatureResponse feature_response = 2;
+        DeletePersonResponse deletion_response = 3;
+        SetPersonResponse modification_response = 4;
+        AddPersonResponse image_response = 5;
+    }
+}
+
+// 设备处理结果
+message PullFaceRespRequest{
+    int32 pull_id = 1;                           // 拉取id
+    repeated FaceCommandResponse result = 2;         // 设备处理结果
+}
+
+// 服务端收到响应
+message PullFaceRespResponse{
+    int32 pull_id = 1;
+}
+
+
+//新增添加通行规则请求
+message AddAccessRuleRequest{
+    repeated AccessRule access_rule = 1; //规则
+}
+
+message AddAccessRuleResponse{
+
+}
+
+//新增修改通行规则请求
+message ModifyAccessRuleRequest{
+   repeated AccessRule access_rule = 1; //规则
+}
+
+message ModifyAccessRuleResponse{
+
+}
+
+//新增删除通行规则请求
+message DeleteAccessRuleRequest{
+    repeated int32 rule_ids = 1;
+}
+
+message DeleteAccessRuleResponse{
+
+}
+
+//新增清空通行规则请求
+message ClearAccessRuleRequest{
+}
+
+message ClearAccessRuleResponse{
+}
+
+//新增查询通行规则请求
+message GetAccessRuleRequest{
+    repeated int32 rule_ids = 1;   //规则id,为空则返回设备所有的规则
+}
+
+message GetAccessRuleResponse{
+    repeated AccessRule access_rules=1;
+}
+
+//新增上报通行规则请求
+message UploadAccessRuleRequest{
+    repeated AccessRule access_rule = 1; //规则
+}
+
+message UploadAccessRuleResponse{
+    repeated AccessRule add_access_rule = 1; //新增的规则
+    repeated AccessRule modify_access_rule = 2; //修改的规则
+    repeated int32 rule_ids = 3; //删除的规则
+}
+
+
+//grpc服务接口
+///////////////////////////////////////
+service FaceDatabaseService{
+    rpc GetFaceDatabaseInformation(GetFaceDatabaseInformationRequest)returns(GetFaceDatabaseInformationResponse);
+    rpc GetPerson(GetPersonRequest)returns(GetPersonResponse);
+    rpc GetPersons(GetPersonsRequest)returns(GetPersonsResponse);
+    rpc AddPerson(AddPersonRequest)returns(AddPersonResponse);
+    rpc AddPersonByFeature(AddPersonByFeatureRequest)returns(AddPersonByFeatureResponse);
+    rpc DeletePerson(DeletePersonRequest)returns(DeletePersonResponse);
+    rpc ClearFaceDatabase(ClearFaceDatabaseRequest)returns(ClearFaceDatabaseResponse);
+    rpc SetPerson(SetPersonRequest)returns(SetPersonResponse);
+
+    rpc StartFaceDatabaseImport(StartFaceDatabaseImportRequest)returns(StartFaceDatabaseImportResponse);
+    rpc FaceDatabaseImport(FaceDatabaseImportRequest)returns(FaceDatabaseImportResponse);
+    rpc CancelFaceDatabaseImport(CancelFaceDatabaseImportRequest)returns(CancelFaceDatabaseImportResponse);
+
+    rpc StartFaceDatabaseExport(StartFaceDatabaseExportRequest)returns(StartFaceDatabaseExportResponse);
+    rpc QueryFaceDatabaseEncryptProgress(QueryFaceDatabaseEncryptProgressRequest)returns(QueryFaceDatabaseEncryptProgressResponse);
+    rpc FaceDatabaseExport(FaceDatabaseExportRequest)returns(FaceDatabaseExportResponse);
+    rpc CancelFaceDatabaseExport(CancelFaceDatabaseExportRequest)returns(CancelFaceDatabaseExportResponse);
+
+    rpc ExtractFeature(ExtractFeatureRequest)returns(ExtractFeatureResponse);
+    rpc CheckFace(FaceDetectionRequest)returns(FaceDetectionResponse);
+
+    rpc PullFace(PullFaceRequest)returns(PullFaceResponse);
+    rpc PullFaceStart(PullFaceStartRequest)returns(PullFaceStartResponse);
+    rpc PullFaceResp(PullFaceRespRequest)returns(PullFaceRespResponse);
+}

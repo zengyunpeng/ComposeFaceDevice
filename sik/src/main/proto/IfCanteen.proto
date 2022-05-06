@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.canteen";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+
+
+message SetCanteenRequest{
+    string name = 1;            //食堂名称
+    int32 duplication_time = 2;//去重时间
+}
+
+message SetCanteenResponse{
+
+}
+
+
+enum CanteenIdentifyStatus{
+    SUCCESS = 0;
+    FAIL = 1;
+}
+
+//食堂识别请求
+message IdentifyCanteenPersonRequest{
+    string person_id=1; //人员id
+}
+
+message IdentifyCanteenPersonResponse{
+    CanteenIdentifyStatus status=1; //识别状态
+    string message = 2;//提示
+}
+
+message CanteenEvent{
+    int32 rule_id = 1;
+}

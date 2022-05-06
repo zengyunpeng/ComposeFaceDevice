@@ -1,0 +1,381 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.face";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+import "IfCommonType.proto";
+
+
+//人脸抓拍配置
+///////////////////////////////////////
+message FaceCaptureConfiguration{
+    repeated Rectangle areas=1;//抓拍区域
+    sint32 min_face_size=2;//最小人脸
+    float quality_threshold=3;//人脸质量门限
+    int32 times=4;//抓拍次数
+}
+
+message SetFaceCaptureConfigurationRequest {
+    FaceCaptureConfiguration configuration=1;
+}
+
+message SetFaceCaptureConfigurationResponse{
+}
+
+message GetFaceCaptureConfigurationRequest {
+}
+
+message GetFaceCaptureConfigurationResponse {
+    FaceCaptureConfiguration configuration=1;
+}
+
+
+//新增智能人脸抓拍参数
+message SmartFaceCaptureConfig{
+    int32 face_value = 1;           //正脸值[0-100]
+    int32 min_pixel = 2;            //最小像素[30,300]
+    int32 max_pixel = 3;            //最大像素[300,500]
+    int32 sensitivity = 4;          //抓拍灵敏度[0-100]
+    int32 interval = 5;             //离开间隔[1-10]
+    int32 offline_img_type = 6 ;    //离线图片保持类型 [0不保存，人脸抓拍=1，人头抓拍=2，人体抓拍=4,人脸+人头=3， 人脸+人体=5， 人头+人体=6， 人脸+人头+人体=7]
+    int32 vir_para = 7;             //人脸垂直扩展参数[0,10]
+    int32 hor_para = 8;             //人脸水平扩展参数[0,10]
+    int32 img_quality = 9;             //图片质量[1-100]
+}
+
+//新增相机参数
+message SmartCameraConfig{
+    repeated float camera_mat = 1; //机内矩阵[fx, fy, cx, cy]
+    repeated float floor_para = 2; //地面方程[a,b,c,d]
+}
+
+//新增智能抓拍参数配置
+message SetSmartCaptureConfigRequest{
+    bool  rt_report = 1 ;            //上报开关 false-关闭/true-开启
+    int32 stat_period = 2;          //统计周期[1,2,3,4,5,10,15,30,60]
+    int32 method = 3;               // 辅助抓拍method:[人脸抓拍=1，人头抓拍=2，人体抓拍=4,人脸+人头=3， 人脸+人体=5， 人头+人体=6， 人脸+人头+人体=7]
+    SmartFaceCaptureConfig smart_face_capture_config = 4;//人脸抓拍参数
+    SmartCameraConfig smart_camera_config = 5;//相机参数
+    int32 cap_interval = 6;        //定时抓拍间隔
+}
+
+message SetSmartCaptureConfigResponse{
+}
+
+//新增获取智能抓拍参数配置
+message GetSmartCaptureConfigRequest{
+
+}
+
+message GetSmartCaptureConfigResponse{
+    bool  rt_report = 1 ;            //上报开关 false-关闭/true-开启
+    int32 stat_period = 2;          //统计周期[1,2,3,4,5,10,15,30,60]
+    int32 method = 3;               // 辅助抓拍method:[人脸抓拍=1，人头抓拍=2，人体抓拍=4,人脸+人头=3， 人脸+人体=5， 人头+人体=6， 人脸+人头+人体=7]
+    SmartFaceCaptureConfig smart_face_capture_config = 4;//人脸抓拍参数
+    SmartCameraConfig smart_camera_config = 5;//相机参数
+    int32 cap_interval = 6;        //定时抓拍间隔
+    int32 reset_time = 7;   //每天重启时间
+}
+
+//新增布放时间配置
+message GuardTime{
+    int32 start = 1;//开始时间换算成分钟
+    int32 stop = 2;//结束时间换算成分钟
+}
+
+message DayGuardTime{
+    repeated  GuardTime guard_times = 1;
+}
+
+//一天
+message SetGuardTimeRequest{
+    DayGuardTime day1 = 1;      //周一
+    DayGuardTime day2 = 2;      //周二
+    DayGuardTime day3 = 3;     //周三
+    DayGuardTime day4 = 4;     //周四
+    DayGuardTime day5 = 5;     //周五
+    DayGuardTime day6 = 6;     //周六
+    DayGuardTime day7 = 7;     //周天
+}
+
+message SetGuardTimeResponse{
+
+}
+
+//新增获取布放时间配置
+message GetGuardTimeRequest{
+
+}
+
+message GetGuardTimeResponse{
+    DayGuardTime day1 = 1;      //周一
+    DayGuardTime day2 = 2;      //周二
+    DayGuardTime day3 = 3;     //周三
+    DayGuardTime day4 = 4;     //周四
+    DayGuardTime day5 = 5;     //周五
+    DayGuardTime day6 = 6;     //周六
+    DayGuardTime day7 = 7;     //周天
+}
+
+
+//新增叠加信息配置
+enum OsdMode {
+     OSD_NO = 0; //无
+     OSD_IN = 1; //进入
+     OSD_OUT = 2; //离开
+     OSD_IN_OUT = 3; //进入/离开
+}
+
+message SetOsdRequest{
+    OsdMode osd_mode = 1;               //显示信息
+    Rectangle roi = 2;                      //区域左上坐标，右下坐标
+    int32 clear_time = 3;                   //清零时间 [0,1,2,3,4...24] 代表整小时
+}
+
+message SetOsdResponse{
+}
+
+//新增叠加信息配置
+message GetOsdRequest{
+}
+
+message GetOsdResponse{
+    OsdMode osd_mode = 1;               //显示信息
+    Rectangle roi = 2;                      //区域左上坐标，右下坐标
+    int32 clear_time = 3;                   //清零时间 [0,1,2,3,4...24] 代表整小时
+}
+
+//智能规则工程标定焦距调节目前结构体未定
+message SmartFocusAdjustRequest{
+
+}
+
+message SmartFocusAdjustResponse{
+
+}
+
+//智能规则工程标定外参标定
+message SmartOutParamRequest{
+    CommonStatus flag = 1;    ////false-关闭/true-开启
+}
+
+message SmartOutParamResponse{
+}
+
+//去掉原来的智能规则配置
+//新增进店规则配置
+message InitEntryAreaRuleRequest{
+    int32 rule_id = 1;                   //id
+    repeated Point door = 2; //门店两个点
+}
+
+message EntryArea{
+    repeated Point a = 1; //客流规则区域四个点，可形成a客流缓存区
+    repeated Point b = 2; //客流规则区域四个点，可形成b客流缓存区
+    repeated Point c = 3; //客流规则区域四个点，可形成c客流缓存区
+    repeated Point d = 4; //客流规则区域四个点，可形成d客流缓存区
+}
+
+message InitEntryAreaRuleResponse{
+    int32 rule_id = 1;
+    EntryArea entry = 2;
+    repeated Point disappear = 3;
+    int32 width_disappear = 4;                   //id
+    int32 width_a = 5;              //a宽度
+    int32 width_b = 6;              //b宽度
+}
+
+message ModifyEntryAreaRuleRequest{
+    int32 rule_id = 1;               //id
+    int32 width_a = 2;              //a宽度
+    int32 width_b = 3;              //b宽度
+}
+
+message ModifyEntryAreaRuleResponse{
+    int32 rule_id = 1;
+    EntryArea entry = 2;
+}
+
+message SmartAreaRule{
+    int32 rule_id = 1;     //id
+    CommonString rule_name = 2;  //名称
+    EntryArea entry = 3;
+    repeated Point pass = 4;
+    int32 width_a = 5;              //a宽度
+    int32 width_b = 6;              //b宽度
+    int32 width_disappear = 7 ;
+    repeated Point disappear = 8;
+    repeated Point door = 9; //门店两个点
+    int32 reverse_flag = 10;
+}
+
+message StoreRule{
+    int32 store_id = 1;
+    string store_color = 2;
+    CommonString store_name = 3;//门店名称
+    repeated SmartAreaRule rules = 4;//规则
+}
+
+//获取智能规则配置
+message GetSmartRuleRequest{
+
+}
+
+message GetSmartRuleResponse{
+    repeated StoreRule stores = 1;//门店规则
+}
+
+
+//增加查询标定结果
+message GetSmartOutParamRequest{
+}
+
+message GetSmartOutParamResponse{
+    repeated float floor_para = 1; //地面参数
+    repeated int32 cube = 2; //立方体坐标
+}
+
+//增加设置外参
+message SetSmartOutParamRequest{
+    repeated float floor_para = 1; //地面参数
+}
+
+message SetSmartOutParamResponse{
+
+}
+
+//增加debug模式开关
+message SmartDebugRequest{
+    CommonStatus flag = 1;    ////false-关闭/true-开启
+}
+
+message SmartDebugResponse{
+
+}
+
+//增加新增门店
+message AddStoreRequest{
+    string store_name = 1;
+    string store_color = 2;
+}
+
+message AddStoreResponse{
+    int32 store_id = 1;
+}
+
+//增加修改门店
+message ModifyStoreRequest{
+    int32 store_id = 1;
+    string store_name = 2;
+    string store_color = 3;
+}
+
+message ModifyStoreResponse{
+
+}
+
+//增加删除门店
+message DeleteStoreRequest{
+    int32 store_id = 1;
+}
+
+message DeleteStoreResponse{
+
+}
+
+//增加新增规则
+message AddRuleRequest{
+    int32 store_id = 1;
+    string rule_name = 2;
+}
+
+message AddRuleResponse{
+    int32 rule_id = 1;
+}
+
+//修改新增规则
+message ModifyRuleRequest{
+    int32 rule_id = 1;
+    string rule_name = 2;
+}
+
+message ModifyRuleResponse{
+
+}
+
+
+//增加新增规则
+message DeleteRuleRequest{
+    int32 rule_id = 1;
+}
+
+message DeleteRuleResponse{
+
+}
+
+//增加设置经过区域
+message setRulePassRequest{
+    int32 rule_id = 1;
+    repeated Point pass = 2;
+}
+
+message setRulePassResponse{
+
+}
+
+//增加删除经过区域
+message DeleteRulePassRequest{
+    int32 rule_id = 1;
+}
+
+message DeleteRulePassResponse{
+
+}
+
+//增加反转门方向
+message ReverseDoorRequest{
+    int32 rule_id = 1;
+}
+
+message ReverseDoorResponse{
+
+}
+
+//增加删除进店区域
+message DeleteEntryAreaRequest{
+    int32 rule_id = 1;
+}
+
+message DeleteEntryAreaResponse{
+
+}
+
+//增加推送
+message PushSmartRuleRequest{
+    repeated StoreRule stores = 1;//门店规则
+}
+
+message PushSmartRuleResponse{
+
+}
+
+//增加修改消失区域宽度
+message ModifyDisappearRequest{
+    int32 rule_id = 1;
+    int32 width_disappear = 2;
+}
+
+message ModifyDisappearResponse{
+    int32 rule_id = 1;
+    repeated Point disappear = 2;
+}
+
+//grpc服务接口
+///////////////////////////////////////
+service AnalyticsService{
+    rpc SetFaceCaptureConfiguration(SetFaceCaptureConfigurationRequest)returns(SetFaceCaptureConfigurationResponse);
+    rpc GetFaceCaptureConfiguration(GetFaceCaptureConfigurationRequest)returns(GetFaceCaptureConfigurationResponse);
+}

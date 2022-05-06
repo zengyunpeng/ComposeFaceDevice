@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.IfHealthCode";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+import "IfCommonType.proto";
+import "IfEvent.proto";
+package Ifaipb;
+
+
+enum PassEnum{
+    IDENTITY = 0; //身份证
+    HEALTH_CODE = 1; //健康码
+    FACE = 2;//人脸比对
+}
+
+
+message ReportPassInfoRequest{
+    PassEnum passType = 1;       //类型
+    IdentityResult identity = 2; //身份证信息
+    string health_code = 3;      //健康码
+    Image face_image = 4;        //人脸抓拍
+    float temperature = 5;      // 温度
+    int32 state = 6;           // 0 表示未开启温度模块 1 为正常温度 2 为异常温度
+    string customer_id = 7; //用户自定义Id，设备只是做保存
+}
+
+
+enum HealthCodeEnum{
+    UNKNOWN_CODE = 0; //未知
+    RED = 1;   //红码
+    YELLOW = 2; //黄码
+    GREEN = 3; //绿码
+}
+
+enum HealthStatusEnum{
+    UNKNOWN_STATUS = 0; //未知
+    POSITIVE = 1;   //阳性
+    NEGATIVE = 2; //阴性
+}
+
+
+message ReportPassInfoResponse{
+    ErrorInformation error_info = 1; //返回信息
+    HealthCodeEnum health_code = 2; //健康码
+    HealthStatusEnum health_status = 3;//健康检测状态
+}

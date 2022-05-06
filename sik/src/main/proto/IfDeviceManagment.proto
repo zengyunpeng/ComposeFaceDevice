@@ -1,0 +1,312 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.devmgmt";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+import "IfCommonType.proto";
+
+
+//登录
+///////////////////////////////////////
+message LoginRequest {
+    string username = 1;    //用户名
+    string password = 2;    //密码
+}
+
+message LoginResponse {
+}
+///////////////////////////////////////
+
+//退出登录
+///////////////////////////////////////
+message LogoutRequest {
+}
+
+message LogoutResponse {
+}
+///////////////////////////////////////
+
+//心跳
+///////////////////////////////////////
+message HeartbeatRequest {
+}
+
+message HeartbeatResponse {
+}
+///////////////////////////////////////
+
+//注册
+///////////////////////////////////////
+message RegisterRequest {
+    string username = 1;    //用户名
+    string password = 2;    //密码
+    string id=3;            //登录ID，作为设备唯一标识
+}
+
+message RegisterResponse {
+    int32 heartbeat_interval_seconds=1;//心跳间隔,单位：秒
+}
+///////////////////////////////////////
+
+
+//设备能力
+///////////////////////////////////////
+message FaceCaptureCapability{
+    bool support_face_capture=1;//是否支持人脸抓拍
+    string face_capture_algrithm_version=2;//人脸抓拍算法版本
+    bool support_gender_predict=3;//是否支持性别检测
+    string gender_predict_algrithm_version=4;//性别检测算法版本
+    bool support_age_predict=5;//是否支持年龄检测
+    string age_predict_algrithm_version=6;//年龄检测算法版本
+    bool support_feature_extraction=7;//是否支持特征提取
+    string feature_extraction_algrithm_version=8;//特征提取算法版本
+    bool support_pull_face=9;//是否支持拉取授权
+}
+
+message FaceDatabaseCapability{
+    int32 max_face_count=3;//最大人脸数目,如果不提供或者或等于0，则说明不支持人脸库
+}
+
+message GetCapabilityRequest{
+}
+
+message GetCapabilityResponse{
+    //人脸库能力，是否支持人脸库存在以及人脸库容量等能力
+    FaceDatabaseCapability face_database_capability =1;
+    //人脸检测能力，是否支持人脸检测、性别、年龄检测等能力
+    FaceCaptureCapability face_capture_capability=2;
+}
+///////////////////////////////////////
+
+//获取设备信息
+///////////////////////////////////////
+message GetDeviceInformationRequest{
+}
+
+message GetDeviceInformationResponse{
+    string manufacturer=1;//制造商
+    string model=2;//型号
+    string firmware_version=3;//固件版本
+    string serial_number=4;//序列号
+	string position=5;//设备安装位置
+	string description=6;//设备描述
+	string app_version=7;//应用程序版本
+}
+///////////////////////////////////////
+
+//设置设备信息
+///////////////////////////////////////
+message SetDeviceInformationRequest{
+	string position=1;//设备安装位置
+	string description=2;//设备描述
+}
+
+message SetDeviceInformationResponse{
+}
+///////////////////////////////////////
+
+//恢复出厂设置
+///////////////////////////////////////
+message SetFactoryDefaultRequest{
+}
+
+message SetFactoryDefaultResponse{
+}
+///////////////////////////////////////
+
+//日期和时间配置
+///////////////////////////////////////
+enum SetDateTimeType{
+    SetDateTimeType_Manual=0;//手动配置时间
+    SetDateTimeType_NTP=1;//通过NTP服务器配置时间
+}
+
+message GetSystemDateTimeRequest{
+}
+
+message GetSystemDateTimeResponse{
+    SetDateTimeType type=1;
+    DateTime date_time=2;//当前时间   
+}
+
+message SetSystemDateTimeRequest{
+    SetDateTimeType type=1;
+    DateTime date_time=2;//只有当type=SetDateTimeType_Manual，此参数才有意义
+}
+
+message SetSystemDateTimeResponse{
+}
+///////////////////////////////////////
+
+//NTP配置
+///////////////////////////////////////
+message NTPConfiguration{
+    string uri=1;
+    int32 sync_interval=2;
+    int32 port=3;
+}
+
+message GetNTPConfigurationRequest{
+}
+
+message GetNTPConfigurationResponse{
+    NTPConfiguration configuration=1;
+}
+
+message SetNTPConfigurationRequest{
+    NTPConfiguration configuration=1;
+}
+
+message SetNTPConfigurationResponse{
+}
+///////////////////////////////////////
+
+//设备网络配置
+///////////////////////////////////////
+message IPv4Configuration{
+    bool enable=1;
+    bool from_DHCP=2;
+    string ip=3;
+    string subnet=4;
+    string gateway=5;
+    string dns1=6;
+    string dns2=7;
+}
+
+message IPv6Configuration{
+    bool enable=1;
+    bool from_DHCP=2;
+    string ip=3;
+    string subnet=4;
+    string gateway=5;
+    string dns1=6;
+    string dns2=7;
+}
+
+message NetworkConfiguration{
+    string if_name=1;
+    string mac_address=2;
+    IPv4Configuration ipv4_configuration=3;
+    IPv6Configuration ipv6_configuration=4;
+}
+
+message GetNetworkConfigurationRequest{
+}
+
+message GetNetworkConfigurationResponse{
+    repeated NetworkConfiguration configuration=1;
+}
+
+message SetNetworkConfigurationRequest{
+    repeated NetworkConfiguration configuration=1;
+}
+
+message SetNetworkConfigurationResponse{
+}
+
+//系统状态
+///////////////////////////////////////
+message GetSystemStateRequest{
+}
+
+message GetSystemStateResponse{
+    int32 cpu_load=1;//CPU使用率百分比
+    int32 mem_usage=2;//内存使用率百分比
+    int32 disk_usage=3;//磁盘空间使用率百分比
+}
+///////////////////////////////////////
+
+//重启
+///////////////////////////////////////
+message RebootRequest{
+}
+
+message RebootResponse{
+}
+///////////////////////////////////////
+
+//升级
+///////////////////////////////////////
+message StartUpgradeRequest{
+    int32 total_size=1;         //升级文件总大小
+    int32 total_packet_count=2; //分包个数
+    int32 per_packet_size=3;    //分包大小
+    //升级包文件所在地址，一般为http地址，如果提供，则由终端设备主动下载升级包完成升级，
+    //此时total_size、total_packet_count、per_packet_size可以不提供，
+    //否则由服务端主动发送升级包给终端设备,此时应该提供total_size、total_packet_count、per_packet_size
+    string packet_uri=4;        
+}
+
+message StartUpgradeResponse{
+}
+
+message UpgradeRequest{
+    int32 current_packet_index=1;//当前分包序号，从0开始
+    bool end_packet=2;           //是否是最后一个包
+    bytes packet_data=3;         //分包数据
+}
+
+message UpgradeResponse{
+}
+
+message CancelUpgradeRequest{
+}
+
+message CancelUpgradeResponse{
+}
+
+enum UpgradeState{
+    UpgradeState_OK=0;
+    UpgradeState_Failure=1;
+}
+
+message ReportUpgradeStateRequest{
+    UpgradeState state=1;//升级状态
+    string reason=2;//错误描述,当升级成功
+}
+
+message ReportUpgradeStateResponse{
+}
+///////////////////////////////////////
+
+//设备名称配置
+///////////////////////////////////////
+message SetDeviceNameRequest{
+    string name=1;
+}
+
+message SetDeviceNameResponse{
+}
+
+message GetDeviceNameRequest{
+}
+
+message GetDeviceNameResponse{
+    string name=1;
+}
+///////////////////////////////////////
+
+
+//grpc服务接口
+///////////////////////////////////////
+service DeviceManagmentService{
+    rpc GetCapability(GetCapabilityRequest)returns(GetCapabilityResponse);
+    rpc GetDeviceInformation(GetDeviceInformationRequest)returns(GetDeviceInformationResponse);
+    rpc SetFactoryDefault(SetFactoryDefaultRequest) returns(SetFactoryDefaultResponse);
+    rpc GetSystemState(GetSystemStateRequest)returns(GetSystemStateResponse);
+    rpc Reboot(RebootRequest)returns(RebootResponse);
+    rpc StartUpgrade(StartUpgradeRequest)returns(StartUpgradeResponse);
+    rpc Upgrade(UpgradeRequest)returns(UpgradeResponse);
+    rpc CancelUpgrade(CancelUpgradeRequest)returns(CancelUpgradeResponse);
+    rpc GetSystemDateTime(GetSystemDateTimeRequest)returns(GetSystemDateTimeResponse);
+    rpc SetSystemDateTime(SetSystemDateTimeRequest)returns(SetSystemDateTimeResponse);
+    rpc GetNTPConfiguration(GetNTPConfigurationRequest)returns(GetNTPConfigurationResponse);
+    rpc SetNTPConfiguration(SetNTPConfigurationRequest)returns(SetNTPConfigurationResponse);
+    rpc GetNetworkConfiguration(GetNetworkConfigurationRequest)returns(GetNetworkConfigurationResponse);
+    rpc SetNetworkConfiguration(SetNetworkConfigurationRequest)returns(SetNetworkConfigurationResponse);
+    rpc SetDeviceName(SetDeviceNameRequest)returns(SetDeviceNameResponse);
+    rpc GetDeviceName(GetDeviceNameRequest)returns(GetDeviceNameResponse);
+}

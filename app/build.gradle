@@ -46,7 +46,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar','*.aar'], dir: 'libs')
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
@@ -71,25 +71,32 @@ dependencies {
     // If you want to additionally use the CameraX Extensions library
     implementation "androidx.camera:camera-extensions:1.1.0-beta03"
     //权限
-//    implementation 'com.github.getActivity:XXPermissions:13.5'
+    implementation 'com.github.getActivity:XXPermissions:13.5'
     implementation(project(":yuv"))
     //mmkv
     implementation 'com.tencent:mmkv:1.2.13'
-    //koin
-    def koin_version= "3.1.6"
-    // Koin main features for Android
-    implementation "io.insert-koin:koin-android:$koin_version"
-// No more koin-android-viewmodel, koin-android-scope, koin-android-fragment
-//
-//// Java Compatibility
-//    implementation "io.insert-koin:koin-android-compat:$koin_version"
-// Jetpack WorkManager
-    implementation "io.insert-koin:koin-androidx-workmanager:$koin_version"
-// Navigation Graph
-    implementation "io.insert-koin:koin-androidx-navigation:$koin_version"
-// Jetpack Compose
-    implementation "io.insert-koin:koin-androidx-compose:$koin_version"
+    //引入协程
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2'
 
+
+    //koin
+//    def koin_version = "3.1.6"
+//    // Koin main features for Android
+//    implementation "io.insert-koin:koin-android:$koin_version"
+//// No more koin-android-viewmodel, koin-android-scope, koin-android-fragment
+////
+////// Java Compatibility
+////    implementation "io.insert-koin:koin-android-compat:$koin_version"
+//// Jetpack WorkManager
+//    implementation "io.insert-koin:koin-androidx-workmanager:$koin_version"
+//// Navigation Graph
+//    implementation "io.insert-koin:koin-androidx-navigation:$koin_version"
+//// Jetpack Compose
+//    implementation "io.insert-koin:koin-androidx-compose:$koin_version"
+
+
+    implementation(project(":dblib"))
 
 
     testImplementation 'junit:junit:4.13.2'

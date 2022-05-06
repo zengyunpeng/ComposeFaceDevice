@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.pay";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+import "IfEvent.proto";
+
+// 发起订单
+message OrderRequest{
+    string order_id = 1;
+    float order_amount = 2;         // 订单金额
+    int32 order_expire = 3;         // 订单超时时间
+}
+
+message OrderResponse{
+}
+
+// 订单识别结果
+message OrderRecognitionRequest{
+    string order_id = 1;
+    oneof result{
+        FaceCaptureResult face_capture=2;           // 人脸检测结果
+        OrderRecognitionError error_info = 3;      // 识别错误信息
+    }
+}
+// 订单识别错误枚举
+enum OrderRecognitionError{
+    NO_FACE = 0;              // 无人脸
+    MULTI_FACE = 1;           // 多人脸
+    STRANGE_FACE = 2;         // 陌生人
+    ILLEGAL_PHONE_NUMBER = 3; //电话号码比对错误
+}
+
+message OrderRecognitionResponse{
+}
+
+// 订单支付结果
+message OrderPayResultRequest{
+    string order_id = 1;
+    string order_result = 2;        // 订单结果
+}
+
+message OrderPayResultResponse{
+}
+
+
+//grpc服务接口
+///////////////////////////////////////
+service PayService{
+    rpc PayOrder(OrderRequest)returns(OrderResponse);
+    rpc PayOrderRecognition(OrderRecognitionRequest)returns(OrderRecognitionResponse);
+    rpc PayOrderResult(OrderPayResultRequest)returns(OrderPayResultResponse);
+}

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,15 +25,13 @@ import com.intellif.composefacedevice.ui.vm.MainVm
 import com.intellif.composefacedevice.view.FaceView
 import com.intellif.composefacedevice.view.LivingSurfaceView
 import com.intellif.composefacedevice.view.preview.LivingInterface1
-import com.theeasiestway.yuv.YuvUtils
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
-    val mainVm by viewModel<MainVm>()
+    val mainVm: MainVm by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Content()
+            Content(mainVm)
         }
 //        mainVm.faceRecs.observeAsState()
         startSDKDetectServer()
@@ -55,9 +54,9 @@ class MainActivity : ComponentActivity() {
     var frameTime = 0L
 
     @SuppressLint("UnsafeOptInUsageError")
-    @Preview
+    @Preview(widthDp = 800, heightDp = 1280)
     @Composable
-    fun Content() {
+    fun Content(mainVm: MainVm = MainVm()) {//预览运行时要获取到vm,这里传入一个默认的才能预览
         Box {
             AndroidView(
                 { context ->

@@ -1,0 +1,162 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.config";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+import "IfCommonType.proto";
+
+// 门禁设置
+message SetDoorControlConfigurationRequest {
+    DoorControlAlgConfiguration door_control_alg_configuration = 1;// 门禁算法配置
+    DoorControlConfiguration door_control_configuration = 2;       // 门禁基本配置
+    DoorInfraredConfiguration door_infrared_configuration = 3;     // 门禁红外配置
+}
+
+
+message SetDoorControlConfigurationResponse {
+}
+
+//  支持门禁特定配置设置
+message SetDoorControlFeatureConfigurationRequest {
+    DoorControlAlgFeatureConfiguration door_control_alg_configuration = 1;// 门禁算法配置
+    DoorControlFeatureConfiguration door_control_configuration = 2;       // 门禁基本配置
+    DoorInfraredFeatureConfiguration door_infrared_configuration = 3;     // 门禁红外配置
+}
+
+message SetDoorControlFeatureConfigurationResponse {
+}
+
+
+message GetDoorControlConfigurationRequest {
+}
+
+message GetDoorControlConfigurationResponse {
+    DoorControlAlgConfiguration door_control_alg_configuration = 1;// 门禁算法配置
+    DoorControlConfiguration door_control_configuration = 2;       // 门禁基本配置
+    DoorInfraredConfiguration door_infrared_configuration = 3;     // 门禁红外配置
+}
+
+// 门禁开门方式配置
+message DoorControlConfiguration {
+    PassThroughModel pass_through_model = 1;// 人员通过模式
+    DoorControlModel door_control_model = 2;// 开门信号模式
+    int32 signal_duration = 3;              // 开门信号持续时间（毫秒）
+    bool voice_prompt = 4;                  // 语音提示开关
+    string fixed_prompt = 5;                // 固定提示语
+    Image logo = 6;                         // 设备logo
+    bytes voice_file = 7;                   // 语音提示文件
+    int32 password = 8 ;                    //开门密码
+    int32 over_time = 9 ;                   //呼叫超时时长
+}
+
+//门禁算法参数配置
+///////////////////////////////////////
+message DoorControlAlgConfiguration {
+    bool infrared_living = 1;               // 红外活体开关
+    bool rgb_living = 2;                    // rgb活体开关
+    float similarity_score_threshold = 3;   // 相似度得分阈值
+    float quality_score_threshold = 4;      // 质量得分阈值
+    IntRange pitch = 5;                     // 点头抬头角度
+    IntRange yaw = 6;                       // 左右摇头角度
+    IntRange roll = 7;                      // 左右偏头角度
+    bool respirator_switch = 8;             // 口罩识别开关
+}
+
+message DoorInfraredConfiguration{
+    bool infrared_temperature_switch = 1;   // 红外温度报警开关
+    float infrared_temperature_minimum = 2; // 红外温度报警阈值最小值
+    float infrared_temperature_maximum = 3; // 红外温度报警阈值最大值
+    float infrared_temperature_adjust = 4;  // 红外温度修正参数
+}
+
+//  门禁开门方式特定配置
+message DoorControlFeatureConfiguration {
+    PassThroughFeatureModel pass_through_model = 1;// 人员通过模式
+    DoorControlModel door_control_model = 2;// 开门信号模式
+    CommonInt signal_duration = 3;              // 开门信号持续时间（毫秒）
+    CommonBool voice_prompt = 4;                  // 语音提示开关
+    CommonString fixed_prompt = 5;                // 固定提示语
+    Image logo = 6;                         // 设备logo
+    CommonBytes voice_file = 7;                   // 语音提示文件
+    CommonInt password = 8;                       //开门密码
+    CommonInt over_time = 9;                       //呼叫超时时间
+}
+
+//  门禁算法参数配置
+///////////////////////////////////////
+message DoorControlAlgFeatureConfiguration {
+    CommonBool infrared_living = 1;               // 红外活体开关
+    CommonBool rgb_living = 2;                    // rgb活体开关
+    CommonFloat similarity_score_threshold = 3;   // 相似度得分阈值
+    CommonFloat quality_score_threshold = 4;      // 质量得分阈值
+    IntRange pitch = 5;                     // 点头抬头角度
+    IntRange yaw = 6;                       // 左右摇头角度
+    IntRange roll = 7;                      // 左右偏头角度
+    CommonBool respirator_switch = 8;             // 口罩识别开关
+}
+
+//
+message DoorInfraredFeatureConfiguration{
+    CommonBool infrared_temperature_switch = 1;   // 红外温度报警开关
+    CommonFloat infrared_temperature_minimum = 2; // 红外温度报警阈值最小值
+    CommonFloat infrared_temperature_maximum = 3; // 红外温度报警阈值最大值
+    CommonFloat infrared_temperature_adjust = 4;  // 红外温度修正参数
+}
+
+// 开门信号
+message OpenDoorSignalRequest{
+}
+
+message OpenDoorSignalResponse{
+}
+
+//设置ROI区域
+message SetROIRequest{
+    repeated Rectangle rects= 1;
+}
+
+message SetROIResponse{
+
+}
+
+message GetROIRequest{
+
+}
+
+message GetROIResponse{
+    repeated Rectangle rects= 1;
+}
+
+
+
+// 包含附带信息的开门信号
+message OpenDoorSignalExRequest{
+    message TemperatureInformation{
+        int32 state = 1;            // 温度是否正常
+        float value = 2;            // 温度
+    }
+    int32 open_door = 1;             // 开门标志
+    TemperatureInformation temperature = 2;
+    string name = 3;                // 姓名
+    string work_number = 4;         // 工牌号码
+    string tip = 5;                 // 提示语
+    oneof image_type{               // 图片文件或图片地址
+        Image image = 6;            // 图片
+        string image_url = 7;       // 图片地址
+    }
+}
+
+message OpenDoorSignalExResponse{
+}
+
+//grpc服务接口
+///////////////////////////////////////
+service GuardPassConfigurationService {
+    rpc SetGuardPassConfiguration (SetDoorControlConfigurationRequest) returns (SetDoorControlConfigurationResponse);
+    rpc GetGuardPassConfiguration (GetDoorControlConfigurationRequest) returns (GetDoorControlConfigurationResponse);
+	rpc OpenDoorSignal(OpenDoorSignalRequest)returns (OpenDoorSignalResponse);
+    rpc OpenDoorExSignal(OpenDoorSignalExRequest)returns (OpenDoorSignalExResponse);
+}

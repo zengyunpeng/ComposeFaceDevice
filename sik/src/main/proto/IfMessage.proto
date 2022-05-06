@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.message";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+import "IfCommonType.proto";
+
+
+//推送图片播放消息
+///////////////////////////////////////
+message AddImageMessageRequest{
+    int64 resource_id=1;//推送资源id
+    DateTime start=2;//播放开始时间
+    DateTime stop=3;//播放结束时间
+    int32 interval=4;//轮播间隔（默认10s）
+    repeated Image images = 5;// 推送图片（限制最多5张）
+}
+
+message AddImageMessageResponse{
+}
+
+message DeleteImageMessageRequest {
+    bool delete_all = 1; // 是否删除所有图片（是，则删除该设备下所有图片推送，否则根据资源id列表进行删除，默认false）
+    repeated int64 resource_ids = 2; //资源id列表
+}
+
+message DeleteImageMessageResponse {
+}
+
+message ByPassMessageRequest{
+   int64 timestamp = 1;// 时间
+   bytes message= 2;// 消息内容
+}
+
+message ByPassMessageResponse{
+}
+
+//新增下发资源请求
+message IssueResourceRequest{
+   repeated ResourceInfo resource_infos = 1; //业务资源信息
+}
+
+message IssueResourceResponse{
+
+}
+
+//新增删除资源请求
+message DeleteResourceRequest{
+    repeated int32 resource_ids = 1;//资源id
+}
+
+message DeleteResourceResponse{
+
+}
+
+//grpc服务接口
+///////////////////////////////////////
+service MessageService{
+    rpc AddImageMessage(AddImageMessageRequest)returns(AddImageMessageResponse);
+    rpc DeleteImageMessage(DeleteImageMessageRequest)returns(DeleteImageMessageResponse);
+}

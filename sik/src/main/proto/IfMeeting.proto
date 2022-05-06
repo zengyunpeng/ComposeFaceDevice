@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.intellif.ifai.meeting";
+option java_outer_classname = "Ifai";
+option objc_class_prefix = "Ifai";
+
+package Ifaipb;
+import "IfCommonType.proto";
+
+
+//添加会议
+///////////////////////////////////////
+message AddMeetingRequest{
+    int64 meeting_id=1;         // 会议id
+    string meeting_name=2;      // 会议名称
+    string meeting_room_name=3;// 会议室名称
+    DateTime start=4;           // 会议开始时间
+    DateTime stop=5;            // 会议结束时间
+    int32 attend_num=6;         // 与会人数
+    string promoter_name=7;     // 发起人名称
+}
+
+message AddMeetingResponse{
+}
+
+message UpdateMeetingRequest{// 更新会议内容
+     int64 meeting_id = 1;           // 会议id
+     string meeting_name = 2;        // 会议名称
+     string meeting_room_name = 3;   // 会议室名称
+     DateTime start = 4;             // 会议开始时间
+     DateTime stop = 5;              // 会议结束时间
+     int32 attend_num = 6;          // 与会人数
+     string promoter_name = 7;      // 发起人名称
+}
+
+message UpdateMeetingResponse{
+}
+
+message AddMeetingPersonRequest{// 添加会议参与人员
+    int32 person_type = 1; //0普通参会人员,1表示管理员
+    int64 meeting_id = 2;
+    repeated string person_ids = 3;
+}
+
+message AddMeetingPersonResponse{
+
+}
+
+message CancelMeetingRequest {// 取消会议
+    int64 meeting_id = 1;
+}
+
+message CancelMeetingResponse {
+}
+
+message CancelMeetingPersonRequest {// 取消与会人员
+    int32 person_type = 1; //0普通参会人员,1表示管理员
+    int64 meeting_id = 2;
+    repeated string person_ids = 3;
+}
+
+message CancelMeetingPersonResponse {
+}
+
+
+//grpc服务接口
+///////////////////////////////////////
+service MeetingService{
+    rpc AddMeeting(AddMeetingRequest)returns(AddMeetingResponse);
+    rpc AddMeetingPerson(AddMeetingPersonRequest)returns(AddMeetingPersonResponse);
+    rpc UpdateMeeting(UpdateMeetingRequest)returns(UpdateMeetingResponse);
+    rpc CancelMeeting(CancelMeetingRequest)returns(CancelMeetingResponse);
+    rpc CancelMeetingPerson(CancelMeetingPersonRequest)returns(CancelMeetingPersonResponse);
+}
