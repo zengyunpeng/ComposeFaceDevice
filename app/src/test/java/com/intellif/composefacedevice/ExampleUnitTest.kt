@@ -1,5 +1,6 @@
 package com.intellif.composefacedevice
 
+import kotlinx.coroutines.*
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -12,6 +13,16 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+        GlobalScope.launch {
+            withContext(Dispatchers.Unconfined) {
+                println(1)
+                withContext(Dispatchers.Unconfined) { // Nested unconfined
+                    println(2)
+                }
+                println(3)
+            }
+            println("Done")
+        }
+        Thread.sleep(10000)
     }
 }

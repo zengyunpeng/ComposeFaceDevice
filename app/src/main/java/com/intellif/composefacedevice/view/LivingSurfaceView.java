@@ -24,6 +24,9 @@ public class LivingSurfaceView extends SurfaceView implements SurfaceHolder.Call
         mSurfaceHolder.setFormat(PixelFormat.TRANSPARENT);//translucent半透明 transparent透明
         mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         mSurfaceHolder.addCallback(this);
+        label39: {
+
+        }
     }
 
     @Override

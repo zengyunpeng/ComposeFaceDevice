@@ -53,7 +53,11 @@ class LoadingActivity : AppCompatActivity() {
     }
 
     private fun startObserver() {
-
+        vm.mProgress.observe(this) {
+            if (it == 100) {
+                startActivity(Intent(this, MainActivity::class.java))
+            }
+        }
     }
 
     @SuppressLint("UnsafeOptInUsageError")
@@ -92,8 +96,9 @@ class LoadingActivity : AppCompatActivity() {
 
 
 
+
                     Text(
-                        text = "${loadingViewModel.mProgress.observeAsState()}%",
+                        text = "${loadingViewModel.mProgress.observeAsState().value}%",
                         fontSize = 24.sp,
                         color = Color.White,
                         textAlign = TextAlign.Center,
